@@ -1,4 +1,3 @@
-import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
 from tkcalendar import Calendar
@@ -77,7 +76,6 @@ def add_task_gui(root, tree):
         creation_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         task_data = {
-            "task_id": len(tasks) + 1,  # Generate a new task ID
             "title": title_entry.get(),
             "description": description_entry.get(),
             "due_date": due_date,
@@ -438,4 +436,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
