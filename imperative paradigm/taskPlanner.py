@@ -23,20 +23,10 @@ def save_tasks():
     with open("tasks.json", "w") as file:
         json.dump(tasks, file, indent=4)
 
-
 def update_task(index, priority, status):
     global tasks
     tasks[index]["priority"] = priority
 
-
-import json
-from datetime import datetime
-import tkinter as tk
-from tkinter import messagebox, ttk
-from tkcalendar import Calendar
-
-# Assuming the global tasks variable and save_tasks function are defined elsewhere
-tasks = []
 
 def add_task(task):
     global tasks
@@ -129,10 +119,8 @@ def check_due_dates():
         messagebox.showwarning("Overdue Tasks", f"The following tasks are overdue: {overdue_task_titles}")
 
 
-#function for GUI 
-from datetime import datetime
-from datetime import datetime, timedelta
 
+#function for GUI 
 def update_task_list(tree):
     global tasks
     check_due_dates()  # Assuming this function updates task states based on due dates
@@ -208,6 +196,7 @@ def update_task_gui(root, tree):
     if selected_task_index is not None:
         task_dialog(root, tree, "Update", tasks[selected_task_index])
 
+
 def delete_task_gui(tree):
     selected_task_index = get_selected_task_index(tree)
     if selected_task_index is not None:
@@ -229,11 +218,10 @@ def get_selected_task_index(tree):
             return index
     return None
 
-from datetime import datetime
-
 def sort_tasks(tree, sort_key):
     global tasks
     
+    # Use loops and conditionals to sort the tasks by key
     if sort_key == "priority":
         # Sort by priority with custom order (Low, Medium, High)
         priority_order = {"Low": 0, "Medium": 1, "High": 2}
@@ -248,10 +236,10 @@ def sort_tasks(tree, sort_key):
         tasks.sort(key=lambda x: x[sort_key])
 
     elif sort_key == "creation_time":
-        # Sort by creation time (ascending order)
-        tasks.sort(key=lambda x: datetime.strptime(x["creation_time"], "%Y-%m-%d %H:%M:%S"))
+        # Sort by creation time
+        tasks.sort(key=lambda x: datetime.strptime(x[sort_key], "%Y-%m-%d %H:%M:%S"))
 
-    # Call the function to update the task list in the treeview
+    # Update the task list after sorting
     update_task_list(tree)
 
 
@@ -432,10 +420,8 @@ def main():
     tk.Button(sort_filter_frame, text="Sort by Due Date", command=lambda: sort_tasks(tree, "due_date"), **button_style).pack(side=tk.LEFT, padx=10)
     tk.Button(sort_filter_frame, text="Sort by Status", command=lambda: sort_tasks(tree, "status"), **button_style).pack(side=tk.LEFT, padx=10)
     tk.Button(sort_filter_frame, text="Filter Tasks", command=lambda: filter_tasks_window(root, tree), **button_style).pack(side=tk.LEFT, padx=10)
-    
-    show_overdue_tasks(None) 
 
-    
+    show_overdue_tasks(None) 
     root.mainloop()
 
 if __name__ == "__main__":
