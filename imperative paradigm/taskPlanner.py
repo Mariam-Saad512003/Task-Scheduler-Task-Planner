@@ -220,25 +220,37 @@ def get_selected_task_index(tree):
 
 def sort_tasks(tree, sort_key):
     global tasks
+
+    # Bubble Sort Algorithm
+    n = len(tasks)
     
-    # Use loops and conditionals to sort the tasks by key
-    if sort_key == "priority":
-        # Sort by priority with custom order (Low, Medium, High)
-        priority_order = {"Low": 0, "Medium": 1, "High": 2}
-        tasks.sort(key=lambda x: priority_order[x[sort_key]])
+    # Perform the Bubble Sort
+    for i in range(n):
+        for j in range(0, n-i-1):
+            swap = False
+            # Compare two adjacent tasks based on the sort_key
+            if sort_key == "priority":
+                priority_order = {"Low": 0, "Medium": 1, "High": 2}
+                if priority_order[tasks[j][sort_key]] > priority_order[tasks[j + 1][sort_key]]:
+                    tasks[j], tasks[j + 1] = tasks[j + 1], tasks[j]
+                    swap = True
+            elif sort_key == "due_date":
+                if datetime.strptime(tasks[j][sort_key], "%Y-%m-%d") > datetime.strptime(tasks[j + 1][sort_key], "%Y-%m-%d"):
+                    tasks[j], tasks[j + 1] = tasks[j + 1], tasks[j]
+                    swap = True
+            elif sort_key == "status":
+                if tasks[j][sort_key] > tasks[j + 1][sort_key]:
+                    tasks[j], tasks[j + 1] = tasks[j + 1], tasks[j]
+                    swap = True
+            elif sort_key == "creation_time":
+                if datetime.strptime(tasks[j][sort_key], "%Y-%m-%d %H:%M:%S") > datetime.strptime(tasks[j + 1][sort_key], "%Y-%m-%d %H:%M:%S"):
+                    tasks[j], tasks[j + 1] = tasks[j + 1], tasks[j]
+                    swap = True
 
-    elif sort_key == "due_date":
-        # Sort by due date (ascending order)
-        tasks.sort(key=lambda x: datetime.strptime(x[sort_key], "%Y-%m-%d"))
-
-    elif sort_key == "status":
-        # Sort by status (alphabetical order)
-        tasks.sort(key=lambda x: x[sort_key])
-
-    elif sort_key == "creation_time":
-        # Sort by creation time
-        tasks.sort(key=lambda x: datetime.strptime(x[sort_key], "%Y-%m-%d %H:%M:%S"))
-
+            # If there was a swap, the list might still not be sorted
+            if swap:
+                continue
+    
     # Update the task list after sorting
     update_task_list(tree)
 
@@ -426,3 +438,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
