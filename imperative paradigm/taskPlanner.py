@@ -432,8 +432,10 @@ def main():
     tk.Button(sort_filter_frame, text="Sort by Due Date", command=lambda: sort_tasks(tree, "due_date"), **button_style).pack(side=tk.LEFT, padx=10)
     tk.Button(sort_filter_frame, text="Sort by Status", command=lambda: sort_tasks(tree, "status"), **button_style).pack(side=tk.LEFT, padx=10)
     tk.Button(sort_filter_frame, text="Filter Tasks", command=lambda: filter_tasks_window(root, tree), **button_style).pack(side=tk.LEFT, padx=10)
+    
+    show_overdue_tasks(None) 
 
-
+    
     root.mainloop()
 
 if __name__ == "__main__":
