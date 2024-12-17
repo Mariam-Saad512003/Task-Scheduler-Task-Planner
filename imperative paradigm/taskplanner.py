@@ -1,3 +1,4 @@
+import tkinter as tk
 from tkinter import messagebox
 from tkinter import ttk
 from tkcalendar import Calendar
@@ -25,7 +26,6 @@ def save_tasks():
 def update_task(index, priority, status):
     global tasks
     tasks[index]["priority"] = priority
-
 
 def add_task(task):
     global tasks
@@ -91,8 +91,6 @@ def add_task_gui(root, tree):
 
     tk.Button(dialog, text="Save", command=save_task).grid(row=4, column=0, columnspan=2, pady=10)
 
-
-
 def delete_task(index):
     global tasks
     del tasks[index]
@@ -116,14 +114,10 @@ def check_due_dates():
         overdue_task_titles = ", ".join([task["title"] for task in overdue_tasks])
         messagebox.showwarning("Overdue Tasks", f"The following tasks are overdue: {overdue_task_titles}")
 
-
-
-#function for GUI 
 def update_task_list(tree):
     global tasks
     check_due_dates()  # Assuming this function updates task states based on due dates
-    save_tasks()  # Save the current state of tasks to the JSON file
-
+      
     for row in tree.get_children():
         tree.delete(row)
 
@@ -132,52 +126,61 @@ def update_task_list(tree):
         due_date = datetime.strptime(task["due_date"], "%Y-%m-%d")
         today = datetime.now()
 
-        # Initialize highlight flags
-        highlight_due_date = False
-
-        # Check if task is overdue (due date has passed)
-        if due_date < today:  # If the task's due date has passed (overdue)
-            task["highlight"] = 'red'  # Overdue tasks will be highlighted with red background and text
-        elif due_date - today <= timedelta(days=2):  # If task is due within the next 2 days
-            task["highlight"] = 'yellow'  # Tasks due in 2 days will have a yellow background
-
-        # Set the color for highlighting
-        highlight_color = task.get("highlight", "black")
+        # Check if task is "completed" - do not highlight
+        if task["status"].lower() == "completed":
+            task["highlight"] = "none"  # Reset any previous highlighting
+        else:
+            # Check if task is overdue (due date has passed)
+            if due_date < today:  # Overdue tasks
+                task["highlight"] = 'red'
+            elif due_date - today <= timedelta(days=2):  # Tasks due soon
+                task["highlight"] = 'yellow'
+            else:
+                task["highlight"] = "normal"  # Default state
 
         # Insert the task into the treeview
-        tree.insert("", "end", values=(task["title"], task["description"], task["due_date"], task["priority"], task["status"]),
-                    tags=('highlight' if task.get("highlight", False) == 'yellow' else 'overdue' if task.get("highlight") == 'red' else 'normal'))
+        tree.insert("", "end", 
+                    values=(task["title"], task["description"], task["due_date"], task["priority"], task["status"]),
+                    tags=('highlight' if task["highlight"] == 'yellow' 
+                          else 'overdue' if task["highlight"] == 'red' 
+                          else 'normal'))
 
     # Configure the tags for highlighting
-    tree.tag_configure('highlight', background='yellow')  # Highlight tasks due in 2 days with yellow background
-    tree.tag_configure('overdue', background='red', foreground='white')  # Highlight overdue tasks with red background and white text
+    tree.tag_configure('highlight', background='yellow')  # Highlight tasks due soon
+    tree.tag_configure('overdue', background='red', foreground='white')  # Highlight overdue tasks
+    tree.tag_configure('normal', background='white', foreground='black')  # Default style for normal tasks
 
-
-
-
+    save_tasks()
 
 def task_dialog(root, tree, action, task=None):
     dialog = tk.Toplevel(root)
     dialog.title(f"{action} Task")
 
-    # Label and combobox for the status only
+    # Label and combobox for the status
     tk.Label(dialog, text="Status:").grid(row=0, column=0, padx=10, pady=5)
     status_combobox = ttk.Combobox(dialog, values=["Completed"], state="readonly")
     status_combobox.grid(row=0, column=1, padx=10, pady=5)
 
+    # Label and combobox for the priority
+    tk.Label(dialog, text="Priority:").grid(row=1, column=0, padx=10, pady=5)
+    priority_combobox = ttk.Combobox(dialog, values=["Low", "Medium", "High"], state="readonly")
+    priority_combobox.grid(row=1, column=1, padx=10, pady=5)
+
     if task:
         status_combobox.set(task["status"])
+        priority_combobox.set(task["priority"])
 
     def save_task():
-        # Ensure that the status is selected
-        if not status_combobox.get():
-            messagebox.showerror("Input Error", "Status must be selected.")
+        # Ensure that the status and priority are selected
+        if not status_combobox.get() or not priority_combobox.get():
+            messagebox.showerror("Input Error", "Both Status and Priority must be selected.")
             return
 
         selected_task_index = get_selected_task_index(tree)
         if selected_task_index is not None:
-            # Update only the task status
+            # Update task status and priority
             tasks[selected_task_index]["status"] = status_combobox.get()
+            tasks[selected_task_index]["priority"] = priority_combobox.get()
 
         # Save the tasks and update the Treeview
         save_tasks()
@@ -185,15 +188,12 @@ def task_dialog(root, tree, action, task=None):
         dialog.destroy()
 
     # Save button
-    tk.Button(dialog, text="Save", command=save_task).grid(row=1, column=0, columnspan=2, pady=10)
-
-
+    tk.Button(dialog, text="Save", command=save_task).grid(row=2, column=0, columnspan=2, pady=10)
 
 def update_task_gui(root, tree):
     selected_task_index = get_selected_task_index(tree)
     if selected_task_index is not None:
         task_dialog(root, tree, "Update", tasks[selected_task_index])
-
 
 def delete_task_gui(tree):
     selected_task_index = get_selected_task_index(tree)
@@ -251,9 +251,6 @@ def sort_tasks(tree, sort_key):
     
     # Update the task list after sorting
     update_task_list(tree)
-
-
-
 
 def display_filtered_results(filtered_tasks):
     result_window = tk.Toplevel()
@@ -326,16 +323,14 @@ def filter_tasks_window(root, tree):
     apply_button = tk.Button(filter_window, text="Apply Filter", command=apply_filter)
     apply_button.grid(row=5, column=0, columnspan=2, pady=10)
 
-
-
-from tkinter import messagebox
-from datetime import datetime
-
 def show_overdue_tasks(tree):
     global tasks
 
-    # Filter overdue tasks
-    overdue_tasks = [task for task in tasks if datetime.strptime(task["due_date"], "%Y-%m-%d") < datetime.now()]
+    # Filter overdue tasks that are not completed
+    overdue_tasks = [
+        task for task in tasks 
+        if datetime.strptime(task["due_date"], "%Y-%m-%d") < datetime.now() and task["status"].lower() != "completed"
+    ]
 
     if not overdue_tasks:
         messagebox.showinfo("No Overdue Tasks", "There are no overdue tasks.")
@@ -360,15 +355,6 @@ def show_overdue_tasks(tree):
 
     overdue_window.mainloop()
 
-# Call this function when you want to display overdue tasks
-# For example, on application start:
-
-
-
-
-from tkinter import ttk
-import tkinter as tk
-
 def main():
     global tasks
     load_tasks()
@@ -379,18 +365,18 @@ def main():
     # Create a Style object to customize the Treeview
     style = ttk.Style(root)
 
-    # Customize the appearance of the Treeview (content rows)
-    style.configure("Treeview",
-    background="#F0F0F0",# Light gray background for rows
-    foreground="#001A6E",   # Set font color to dark blue for rows
-    font=("Arial", 10))      # Set font for the table content
 
 
-    # Customize the header appearance (first row)
+    #  (first row)
     style.configure("Treeview.Heading",
-    background="#001A6E",  # Dark blue background for the header
-    foreground="#00008B",   # Light font color for the header
-    font=("Arial", 12, "bold"))  # Bold font for the header
+    background="#001A6E",  
+    foreground="#00008B",   
+    font=("Arial", 12, "bold"))  
+    # (content rows)
+    style.configure("Treeview",
+    background="#F0F0F0",
+    foreground="#001A6E",  
+    font=("Arial", 10))      
 
     # Set a color for the selected row
     style.map("Treeview",
@@ -407,13 +393,13 @@ def main():
 
     update_task_list(tree)
 
-    # Frame to group the Add, Update, and Delete buttons
+    # Frame to group the buttons
     button_frame = tk.Frame(root)
     button_frame.pack(pady=10)
 
     button_style = {
-        "bg": "#001A6E",  # Dark blue background for buttons
-        "fg": "#F8FAFC",  # Light font color for buttons
+        "bg": "#001A6E",  
+        "fg": "#F8FAFC",  
         "font": ("Arial", 12)
     }
 
