@@ -523,4 +523,10 @@ def main():
     tk.Button(sort_filter_frame, text="Sort by Priority", command=lambda: update_task_list(tree, sort_tasks(tasks, priority_key)), **button_style).pack(side=tk.LEFT, padx=10)
     tk.Button(sort_filter_frame, text="Sort by Due Date", command=lambda: update_task_list(tree, sort_tasks(tasks, due_date_key)), **button_style).pack(side=tk.LEFT, padx=10)
     tk.Button(sort_filter_frame, text="Sort by Status", command=lambda: update_task_list(tree, sort_tasks(tasks, status_key)), **button_style).pack(side=tk.LEFT, padx=10)
-    tk.Button(sort_filter_frame, text="Sort by Creation Time", command=lambd
+    tk.Button(sort_filter_frame, text="Sort by Creation Time", command=lambda: update_task_list(tree, sort_tasks(tasks, creation_time_key)), **button_style).pack(side=tk.LEFT, padx=10)
+    tk.Button(sort_filter_frame, text="Filter Tasks", command=lambda: filter_tasks_gui(root, tree, tasks), **button_style).pack(side=tk.LEFT, padx=10)
+
+    root.mainloop()
+
+if __name__ == "__main__":
+    main()
