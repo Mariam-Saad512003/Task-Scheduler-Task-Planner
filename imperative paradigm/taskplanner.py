@@ -85,8 +85,8 @@ def add_task_gui(root, tree):
         }
 
         add_task(task_data)
-        save_tasks()  # Save tasks to the JSON file
-        update_task_list(tree)  # Update UI
+        save_tasks()  
+        update_task_list(tree) 
         dialog.destroy()
 
     tk.Button(dialog, text="Save", command=save_task).grid(row=4, column=0, columnspan=2, pady=10)
@@ -210,7 +210,7 @@ def get_selected_task_index(tree):
         messagebox.showwarning("Select Task", "Please select a task to update or delete.")
         return None
     selected_item = selected_item[0]
-    title = tree.item(selected_item, "values")[0]  # Adjusted for task_id being removed
+    title = tree.item(selected_item, "values")[0]  
     for index, task in enumerate(tasks):
         if task["title"] == title:
             return index
@@ -228,7 +228,7 @@ def sort_tasks(tree, sort_key):
             swap = False
             # Compare two adjacent tasks based on the sort_key
             if sort_key == "priority":
-                priority_order = {"Low": 0, "Medium": 1, "High": 2}
+                priority_order = {"Low": 2, "Medium": 1, "High": 0}
                 if priority_order[tasks[j][sort_key]] > priority_order[tasks[j + 1][sort_key]]:
                     tasks[j], tasks[j + 1] = tasks[j + 1], tasks[j]
                     swap = True
@@ -406,7 +406,7 @@ def main():
     tk.Button(button_frame, text="Add Task", command=lambda: add_task_gui(root, tree), **button_style).pack(side=tk.LEFT, padx=10)
     tk.Button(button_frame, text="Update Task", command=lambda: update_task_gui(root, tree), **button_style).pack(side=tk.LEFT, padx=10)
     tk.Button(button_frame, text="Delete Task", command=lambda: delete_task_gui(tree), **button_style).pack(side=tk.LEFT, padx=10)
-    tk.Button(button_frame, text="sort by creation time", command=lambda: sort_tasks(tree, "priority"), **button_style).pack(side=tk.LEFT, padx=10)
+    tk.Button(button_frame, text="sort by creation time", command=lambda: sort_tasks(tree, "creation_time"), **button_style).pack(side=tk.LEFT, padx=10)
 
     # Frame to group the Sort and Filter buttons in the same row
     sort_filter_frame = tk.Frame(root)
