@@ -1,0 +1,119 @@
+declare
+% Task Representation
+fun {CreateTask ID Description DueDate Priority Status}
+   task(id: ID description: Description dueDate: DueDate priority: Priority status: Status)
+end
+
+% Functional Task Management (no in-place mutation)
+% Add Task (returns a new list)
+fun {AddTask TaskList ID Description DueDate Priority Status}
+   local
+      Task
+   in
+      Task = {CreateTask ID Description DueDate Priority Status}
+      Task | TaskList
+   end
+end
+
+% Update Task (returns a new list)
+fun {UpdateTask TaskList TaskID UpdateFunc}
+   local
+      UpdatedTaskList UpdatedTask
+   in
+      UpdatedTaskList = nil
+      for Task in TaskList do
+         if Task.id == TaskID then
+            UpdatedTask = {UpdateFunc Task}
+            UpdatedTaskList = UpdatedTask | UpdatedTaskList
+         else
+            UpdatedTaskList = Task | UpdatedTaskList
+         end
+      end
+      {Reverse UpdatedTaskList}
+   end
+end
+
+% Delete Task (returns a new list)
+fun {DeleteTask TaskList TaskID}
+   local
+      FilteredTaskList
+   in
+      FilteredTaskList = nil
+      for Task in TaskList do
+         if Task.id \= TaskID then
+            FilteredTaskList = Task | FilteredTaskList
+         end
+      end
+      {Reverse FilteredTaskList}
+   end
+end
+
+% Notifications: Display Overdue Tasks
+fun {DisplayOverdueTasks TaskList}
+   local
+      Task
+   in
+      {Browse "Overdue Tasks:"}
+      for Task in TaskList do
+         if Task.status == "Overdue" then
+            {Browse Task}
+         end
+      end
+   end
+end
+
+% Persistence: Save to and Load from File (returns new list for loading)
+
+% Save tasks to file in a simple, comma-separated format
+fun {SaveTasksToFile TaskList FileName}
+   local
+      FileStream
+   in
+      FileStream = {Open.file FileName write}
+      for Task in TaskList do
+         {FileStream write Task.id #"," #Task.description #"," #Task.dueDate #"," #Task.priority #"," #Task.status #"\n"}
+      end
+      {FileStream close}
+   end
+end
+
+% Load tasks from file, creating tasks from each line of the file
+fun {LoadTasksFromFile FileName}
+   local
+      FileStream Line Tasks TaskDetails Task
+   in
+      FileStream = {Open.file FileName read}
+      Tasks = nil
+      for Line in {FileStream readAll} do
+         % Split the line into components and create the task
+         TaskDetails = {List.fromString Line ","} % Split by comma
+         Task = {CreateTask TaskDetails.1 TaskDetails.2 TaskDetails.3 TaskDetails.4 TaskDetails.5}
+         Tasks = Task | Tasks
+      end
+      {FileStream close}
+      {Reverse Tasks}
+   end
+end
+
+% Test Code
+
+% Initialize Task List
+declare TaskList = nil
+
+% Adding tasks (replacing the previous task list with a new one)
+TaskList = {AddTask TaskList 1 "Task1" "2024-12-3" 1 "Pending"}
+TaskList = {AddTask TaskList 2 "Task2" "2024-12-5" 2 "Pending"}
+TaskList = {AddTask TaskList 3 "Task3" "2024-12-1" 3 "Overdue"}
+
+% Display overdue tasks
+{DisplayOverdueTasks TaskList}
+
+% Save tasks to file
+{SaveTasksToFile TaskList "tasks.txt"}
+
+% Load tasks from file and browse them (create a new TaskList)
+declare LoadedTaskList
+LoadedTaskList = {LoadTasksFromFile "tasks.txt"}
+{Browse LoadedTaskList}
+
+
